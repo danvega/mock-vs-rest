@@ -60,7 +60,7 @@ assertThat(mockMvcTester.get().uri("/api/books"))
 **Setup:** Add `@AutoConfigureRestTestClient` for direct autowiring!
 ```java
 @WebMvcTest(BookController.class)
-@AutoConfigureRestTestClient  // Required in Spring Boot 4!
+@AutoConfigureRestTestClient
 class BookControllerTest {
 
     @Autowired
