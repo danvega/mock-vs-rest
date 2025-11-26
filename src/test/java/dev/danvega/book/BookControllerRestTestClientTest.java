@@ -8,8 +8,11 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.test.web.servlet.client.assertj.RestTestClientResponse;
 
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -224,6 +227,22 @@ class BookControllerRestTestClientTest {
                 .jsonPath("$[0].authors.length()").isEqualTo(2)
                 .jsonPath("$[0].authors[0]").isEqualTo("Nathaniel Schutta")
                 .jsonPath("$[0].authors[1]").isEqualTo("Dan Vega");
+    }
+
+    @Test
+    @DisplayName("RestTestClient supports AssertJ-style assertions via RestTestClientResponse")
+    void canUseAssertJStyleAssertions() {
+        var book = new Book(1L, "Fundamentals of Software Engineering", List.of("Nathaniel Schutta", "Dan Vega"), "978-1098143237", 2025);
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+
+        var spec = client.get().uri("/api/books/1").exchange();
+        var response = RestTestClientResponse.from(spec);
+
+        assertThat(response)
+                .hasStatusOk()
+                .bodyJson()
+                .extractingPath("$.title")
+                .isEqualTo("Fundamentals of Software Engineering");
     }
 }
 
