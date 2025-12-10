@@ -12,7 +12,7 @@ Great question! I asked the Spring team, and here's what I learned.
 
 | If you... | Choose |
 |-----------|--------|
-| Prefer AssertJ-style assertions | **MockMvcTester** |
+| Prefer AssertJ-style assertions | **Either** (both support it) |
 | Need server-side inspection (handlers, exceptions) | **MockMvcTester** |
 | Need multipart/file upload testing | **MockMvcTester** |
 | Want one API for mock AND real HTTP tests | **RestTestClient** |
@@ -85,6 +85,7 @@ client.get().uri("/api/books")
 - Broader deserialization - any HttpMessageConverter (XML, Protobuf, etc.)
 - Typed response bodies - `expectBody(Book.class)` and `expectBodyList(Book.class)`
 - Auto-switching - uses mock or real server based on test configuration
+- AssertJ support - `RestTestClientResponse` enables AssertJ-style assertions (aligned with MockMvcTester API)
 
 ## The Binding Options (RestTestClient Superpower)
 
@@ -170,6 +171,29 @@ client.get().uri("/api/books/1")
     });
 ```
 
+### AssertJ-Style Assertions
+
+**MockMvcTester:**
+```java
+assertThat(mockMvcTester.get().uri("/api/books/1"))
+    .hasStatusOk()
+    .bodyJson()
+    .extractingPath("$.title")
+    .isEqualTo("Clean Code");
+```
+
+**RestTestClient:**
+```java
+var spec = client.get().uri("/api/books/1").exchange();
+var response = RestTestClientResponse.from(spec);
+
+assertThat(response)
+    .hasStatusOk()
+    .bodyJson()
+    .extractingPath("$.title")
+    .isEqualTo("Clean Code");
+```
+
 ## Current Limitations
 
 ### RestTestClient
@@ -222,4 +246,5 @@ client.get().uri("/api/books/1")
 
 - [Spring Framework 7 RestTestClient](https://www.danvega.dev/blog/spring-framework-7-rest-test-client)
 - [MockMvcTester Documentation](https://docs.spring.io/spring-framework/reference/testing/spring-mvc-test-framework.html)
+- [RestTestClient AssertJ Support](https://docs.spring.io/spring-framework/reference/testing/resttestclient.html#resttestclient-tests) - `RestTestClientResponse` assertions
 - [RestTestClient Issue #35569](https://github.com/spring-projects/spring-framework/issues/35569) - Multipart support

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
@@ -206,10 +207,11 @@ class BookControllerRestTestClientTest {
         client.get().uri("/api/books")
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.length()").isEqualTo(2)
-                .jsonPath("$[0].title").isEqualTo("Fundamentals of Software Engineering")
-                .jsonPath("$[1].title").isEqualTo("Effective Java");
+                .expectBody(new ParameterizedTypeReference<List<Book>>() {})
+                .value( b -> {
+                    assert b.get(0).title().equals("Fundamentals of Software Engineering");
+                    assert b.get(1).authors().contains("Joshua Bloch");
+                });
     }
 
     @Test
